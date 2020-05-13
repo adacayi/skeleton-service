@@ -19,6 +19,7 @@ import uk.co.sancode.skeleton_service.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
@@ -46,7 +47,7 @@ public class UserComponentTest {
     private final String baseUrl = "/users";
 
     @Test
-    public void get_returnsUserList() throws Exception {
+    public void getUsers_returnsUserList() throws Exception {
         // Setup
 
         var users = new ArrayList<User>();
@@ -71,7 +72,7 @@ public class UserComponentTest {
     }
 
     @Test
-    public void givenUserExistsWithTheId_get_id_returnsUserWithId() throws Exception {
+    public void givenUserExistsWithTheId_geUser_returnsUserWithId() throws Exception {
         // Setup
 
         var users = new ArrayList<User>();
@@ -94,5 +95,23 @@ public class UserComponentTest {
         var actualDto = objectMapper.readValue(response, User.class);
         var actual = modelMapper.map(actualDto, User.class);
         assertEquals(user, actual);
+    }
+
+    @Test
+    public void givenUserNotExistsWithTheId_getUser_returns404() throws Exception {
+        // Setup
+
+        var users = new ArrayList<User>();
+        IntStream.range(0, 4).forEach(x -> users.add(new UserBuilder().build()));
+        userRepository.saveAll(users);
+        var id = UUID.randomUUID().toString();
+        // Exercise
+
+        String uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(id).build().toUriString();
+        mockMvc
+                .perform(get(uri))
+                .andExpect(status().isNotFound());
+
+        // Verify
     }
 }
