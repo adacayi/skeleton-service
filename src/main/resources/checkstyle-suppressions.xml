@@ -5,4 +5,6 @@
     <suppress checks="Check identifier" files="ClassName.java"/>
     <!-- Reason: App.java has only main() static method but is not a utility class -->
     <suppress checks="HideUtilityClassConstructor" files="Application.java"/>
+    <!-- Reason: The constructor parameters are all necessary and we cannot split them -->
+    <suppress checks="ParameterNumber" files="OpenIdUrlConfig.java"/>
 </suppressions>
