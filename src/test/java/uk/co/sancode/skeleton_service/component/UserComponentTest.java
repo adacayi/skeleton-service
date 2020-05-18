@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,14 +18,16 @@ import uk.co.sancode.skeleton_service.builder.UserBuilder;
 import uk.co.sancode.skeleton_service.integration.persistance.UserRepository;
 import uk.co.sancode.skeleton_service.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
@@ -47,18 +50,15 @@ public class UserComponentTest {
     private final String baseUrl = "/users";
 
     @Test
-    public void getUsers_returnsUserList() throws Exception {
+    public void givenUsersExist_getUsers_returnsUsers() throws Exception {
         // Setup
 
-        var users = new ArrayList<User>();
-        IntStream.range(0, 2).forEach(x -> users.add(new UserBuilder().build()));
-
+        var users = IntStream.range(0, getRandomInt(2, 4)).mapToObj(x -> new UserBuilder().build()).collect(Collectors.toList());
         userRepository.saveAll(users);
 
         // Exercise
 
-        var response = mockMvc
-                .perform(get(baseUrl))
+        var response = mockMvc.perform(get(baseUrl))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -66,23 +66,53 @@ public class UserComponentTest {
 
         // Verify
 
+        assertNotNull(response);
         var actualDto = objectMapper.readValue(response, UserDto[].class);
-        var actual = modelMapper.map(actualDto, User[].class);
-        assertEquals(users, List.of(actual));
+        var type = new TypeToken<List<User>>() {
+        }.getType();
+        var actual = modelMapper.map(actualDto, type);
+
+        assertEquals(users, actual);
+    }
+
+    @Test
+    public void givenUsersExistAndPageAndSizeGiven_getUsers_returnsUsers() throws Exception {
+        // Setup
+
+        var users = IntStream.range(0, 4).mapToObj(x -> new UserBuilder().build()).collect(Collectors.toList());
+        userRepository.saveAll(users);
+
+        // Exercise
+
+        var response = mockMvc.perform(get(baseUrl)
+                .param("page", "2")
+                .param("size", "2"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Verify
+
+        assertNotNull(response);
+        var actualDto = objectMapper.readValue(response, UserDto[].class);
+        var type = new TypeToken<List<User>>() {
+        }.getType();
+        var actual = modelMapper.map(actualDto, type);
+        assertEquals(users.subList(2, 4), actual);
     }
 
     @Test
     public void givenUserExistsWithTheId_geUser_returnsUserWithId() throws Exception {
         // Setup
 
-        var users = new ArrayList<User>();
-        IntStream.range(0, 4).forEach(x -> users.add(new UserBuilder().build()));
+        var users = IntStream.range(0, 4).mapToObj(x -> new UserBuilder().build()).collect(Collectors.toList());
         userRepository.saveAll(users);
         var user = users.get(2);
 
         // Exercise
 
-        String uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(user.getId().toString()).build().toUriString();
+        var uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(user.getId().toString()).build().toUriString();
         var response = mockMvc
                 .perform(get(uri))
                 .andExpect(status().isOk())
@@ -92,7 +122,7 @@ public class UserComponentTest {
 
         // Verify
 
-        var actualDto = objectMapper.readValue(response, User.class);
+        var actualDto = objectMapper.readValue(response, UserDto.class);
         var actual = modelMapper.map(actualDto, User.class);
         assertEquals(user, actual);
     }
@@ -101,13 +131,13 @@ public class UserComponentTest {
     public void givenUserNotExistsWithTheId_getUser_returns404() throws Exception {
         // Setup
 
-        var users = new ArrayList<User>();
-        IntStream.range(0, 4).forEach(x -> users.add(new UserBuilder().build()));
+        var users = IntStream.range(0, 4).mapToObj(x -> new UserBuilder().build()).collect(Collectors.toList());
         userRepository.saveAll(users);
         var id = UUID.randomUUID().toString();
+
         // Exercise
 
-        String uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(id).build().toUriString();
+        var uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(id).build().toUriString();
         mockMvc
                 .perform(get(uri))
                 .andExpect(status().isNotFound());

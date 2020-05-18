@@ -17,12 +17,12 @@
 	<properties>
 		<java.version>11</java.version>
 		<pl.pragmatists.version>1.1.1</pl.pragmatists.version>
-		<org.liquibase.version>3.6.2</org.liquibase.version>
-		<com.github.tomakehurst.version>2.20.0</com.github.tomakehurst.version>
-		<owasp.dependency.check.version>5.1.1</owasp.dependency.check.version>
-		<jacoco.version>0.8.2</jacoco.version>
-		<com.github.spotbugs.version>4.0.0</com.github.spotbugs.version>
-		<maven.checkstyle.version>3.0.0</maven.checkstyle.version>
+		<org.liquibase.version>3.9.0</org.liquibase.version>
+		<owasp.dependency.check.version>5.3.2</owasp.dependency.check.version>
+		<jacoco.version>0.8.5</jacoco.version>
+		<com.github.spotbugs.version>4.0.3</com.github.spotbugs.version>
+		<com.github.spotbugs.plugin.version>4.0.0</com.github.spotbugs.plugin.version>
+		<maven.checkstyle.version>3.1.1</maven.checkstyle.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 	</properties>
@@ -71,12 +71,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -172,7 +166,7 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>${com.github.spotbugs.version}</version>
+				<version>${com.github.spotbugs.plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>

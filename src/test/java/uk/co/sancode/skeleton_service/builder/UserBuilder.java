@@ -6,6 +6,8 @@ import uk.co.sancode.skeleton_service.model.User;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
+
 public class UserBuilder {
     private UUID id;
     private String name;
@@ -41,9 +43,5 @@ public class UserBuilder {
 
     public User build() {
         return new User(id, name, lastName, dateOfBirth);
-    }
-
-    private int getRandomInt(int startInclusive, int endInclusive) {
-        return (int) (Math.random() * (endInclusive - startInclusive + 1)) + startInclusive;
     }
 }
