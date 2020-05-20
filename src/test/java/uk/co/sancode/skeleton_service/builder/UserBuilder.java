@@ -9,20 +9,20 @@ import java.util.UUID;
 import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
 
 public class UserBuilder {
-    private UUID id;
+    private UUID userId;
     private String name;
     private String lastName;
     private LocalDate dateOfBirth;
 
     public UserBuilder() {
-        id = UUID.randomUUID();
+        userId = UUID.randomUUID();
         name = RandomStringUtils.randomAlphanumeric(getRandomInt(5, 20));
         lastName = RandomStringUtils.randomAlphanumeric(getRandomInt(5, 20));
         dateOfBirth = LocalDate.now().minusYears(getRandomInt(10, 60)).minusDays(getRandomInt(0, 365));
     }
 
-    public UserBuilder withId(UUID id) {
-        this.id = id;
+    public UserBuilder withUserId(UUID id) {
+        this.userId = id;
         return this;
     }
 
@@ -42,6 +42,6 @@ public class UserBuilder {
     }
 
     public User build() {
-        return new User(id, name, lastName, dateOfBirth);
+        return new User(userId, name, lastName, dateOfBirth);
     }
 }

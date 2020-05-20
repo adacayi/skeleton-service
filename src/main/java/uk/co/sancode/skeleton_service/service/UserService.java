@@ -25,12 +25,12 @@ public class UserService {
         return result.getContent();
     }
 
-    public Optional<User> getUser(final UUID id) {
-        return userRepository.findById(id);
+    public Optional<User> getUser(final UUID userId) {
+        return userRepository.findById(userId);
     }
 
     public void saveUser(final User user) throws DuplicateRecordException {
-        var userResult = userRepository.findById(user.getId());
+        var userResult = userRepository.findById(user.getUserId());
 
         if (userResult.isPresent()) {
             throw new DuplicateRecordException();
@@ -40,7 +40,7 @@ public class UserService {
     }
 
     public void updateUser(final User user) throws RecordNotFoundException {
-        var userResult = userRepository.findById(user.getId());
+        var userResult = userRepository.findById(user.getUserId());
 
         if (userResult.isEmpty()) {
             throw new RecordNotFoundException();
@@ -49,13 +49,13 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void deleteUser(final UUID id) throws RecordNotFoundException {
-        var userResult = userRepository.findById(id);
+    public void deleteUser(final UUID userId) throws RecordNotFoundException {
+        var userResult = userRepository.findById(userId);
 
         if (userResult.isEmpty()) {
             throw new RecordNotFoundException();
         }
 
-        userRepository.deleteById(id);
+        userRepository.deleteById(userId);
     }
 }

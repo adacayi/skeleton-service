@@ -50,7 +50,7 @@ public class UserServiceTest {
         when(mockUserPage.getContent()).thenReturn(dummyUsers);
         when(mockUserRepository.findAll(any(Pageable.class))).thenReturn(mockUserPage);
         when(mockUserRepository.findById(any())).thenReturn(Optional.empty());
-        when(mockUserRepository.findById(dummyUser.getId())).thenReturn(Optional.of(dummyUser));
+        when(mockUserRepository.findById(dummyUser.getUserId())).thenReturn(Optional.of(dummyUser));
     }
 
     // region getUsers
@@ -90,11 +90,11 @@ public class UserServiceTest {
 
         // Exercise
 
-        var actual = sut.getUser(dummyUser.getId());
+        var actual = sut.getUser(dummyUser.getUserId());
 
         // Verify
 
-        verify(mockUserRepository, times(1)).findById(dummyUser.getId());
+        verify(mockUserRepository, times(1)).findById(dummyUser.getUserId());
         assertTrue(actual.isPresent());
         assertEquals(dummyUser, actual.get());
     }
@@ -116,7 +116,7 @@ public class UserServiceTest {
 
         // Verify
 
-        verify(mockUserRepository, times(1)).findById(user.getId());
+        verify(mockUserRepository, times(1)).findById(user.getUserId());
         verify(mockUserRepository, times(1)).save(user);
     }
 
@@ -126,7 +126,7 @@ public class UserServiceTest {
 
         var sut = generateSut();
         var user = new UserBuilder().build();
-        when(mockUserRepository.findById(user.getId())).thenReturn(Optional.of(mock(User.class)));
+        when(mockUserRepository.findById(user.getUserId())).thenReturn(Optional.of(mock(User.class)));
 
         // Exercise
 
@@ -135,7 +135,7 @@ public class UserServiceTest {
         } catch (DuplicateRecordException ex) {
             // Verify
 
-            verify(mockUserRepository, times(1)).findById(user.getId());
+            verify(mockUserRepository, times(1)).findById(user.getUserId());
             verify(mockUserRepository, never()).save(any());
 
             throw ex;
@@ -152,7 +152,7 @@ public class UserServiceTest {
 
         var sut = generateSut();
         var user = new UserBuilder().build();
-        when(mockUserRepository.findById(user.getId())).thenReturn(Optional.of(mock(User.class)));
+        when(mockUserRepository.findById(user.getUserId())).thenReturn(Optional.of(mock(User.class)));
 
         // Exercise
 
@@ -160,7 +160,7 @@ public class UserServiceTest {
 
         // Verify
 
-        verify(mockUserRepository, times(1)).findById(user.getId());
+        verify(mockUserRepository, times(1)).findById(user.getUserId());
         verify(mockUserRepository, times(1)).save(user);
     }
 
@@ -177,7 +177,7 @@ public class UserServiceTest {
         } catch (RecordNotFoundException ex) {
             // Verify
 
-            verify(mockUserRepository, times(1)).findById(user.getId());
+            verify(mockUserRepository, times(1)).findById(user.getUserId());
             verify(mockUserRepository, never()).save(any());
 
             throw ex;

@@ -6,21 +6,23 @@ import uk.co.sancode.skeleton_service.api.UserDto;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
+
 public class UserDtoBuilder {
-    private UUID id;
+    private UUID userId;
     private String name;
     private String lastName;
     private LocalDate dateOfBirth;
 
     public UserDtoBuilder() {
-        id = UUID.randomUUID();
+        userId = UUID.randomUUID();
         name = RandomStringUtils.randomAlphanumeric(getRandomInt(5, 20));
         lastName = RandomStringUtils.randomAlphanumeric(getRandomInt(5, 20));
         dateOfBirth = LocalDate.now().minusYears(getRandomInt(10, 60)).minusDays(getRandomInt(0, 365));
     }
 
-    public UserDtoBuilder withId(UUID id) {
-        this.id = id;
+    public UserDtoBuilder withUserId(UUID userId) {
+        this.userId = userId;
         return this;
     }
 
@@ -40,10 +42,6 @@ public class UserDtoBuilder {
     }
 
     public UserDto build() {
-        return new UserDto(id, name, lastName, dateOfBirth);
-    }
-
-    private int getRandomInt(int startInclusive, int endInclusive) {
-        return (int) (Math.random() * (endInclusive - startInclusive + 1)) + startInclusive;
+        return new UserDto(userId, name, lastName, dateOfBirth);
     }
 }

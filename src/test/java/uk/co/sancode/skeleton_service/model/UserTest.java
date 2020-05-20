@@ -48,7 +48,7 @@ public class UserTest {
         // Setup
 
         var user1 = new UserBuilder().build();
-        var user2 = new UserBuilder().withId(user1.getId()).withName(user1.getName()).withLastName(user1.getLastName()).withDateOfBirth(user1.getDateOfBirth()).build();
+        var user2 = new UserBuilder().withUserId(user1.getUserId()).withName(user1.getName()).withLastName(user1.getLastName()).withDateOfBirth(user1.getDateOfBirth()).build();
 
         // Exercise
 
@@ -80,12 +80,14 @@ public class UserTest {
     public List<List<Object>> getUsers() {
         var uuid1 = UUID.randomUUID();
         var uuid2 = UUID.randomUUID();
+        var date1 = LocalDate.of(2000, 1, 1);
+        var date2 = LocalDate.of(2001, 1, 1);
         return List.of(
-                List.of(new UserBuilder().withId(uuid1).withName("a").withLastName("b").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), new UserBuilder().withId(uuid1).withName("a").withLastName("b").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), true),
-                List.of(new UserBuilder().withId(uuid2).withName("a").withLastName("b").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), new UserBuilder().withId(uuid1).withName("a").withLastName("b").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), false),
-                List.of(new UserBuilder().withId(uuid1).withName("b").withLastName("b").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), new UserBuilder().withId(uuid1).withName("a").withLastName("b").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), false),
-                List.of(new UserBuilder().withId(uuid1).withName("a").withLastName("c").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), new UserBuilder().withId(uuid1).withName("a").withLastName("b").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), false),
-                List.of(new UserBuilder().withId(uuid1).withName("a").withLastName("b").withDateOfBirth(LocalDate.of(2001, 1, 1)).build(), new UserBuilder().withId(uuid1).withName("a").withLastName("b").withDateOfBirth(LocalDate.of(2000, 1, 1)).build(), false)
+                List.of(new UserBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), new UserBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), true),
+                List.of(new UserBuilder().withUserId(uuid2).withName("a").withLastName("b").withDateOfBirth(date1).build(), new UserBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false),
+                List.of(new UserBuilder().withUserId(uuid1).withName("b").withLastName("b").withDateOfBirth(date1).build(), new UserBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false),
+                List.of(new UserBuilder().withUserId(uuid1).withName("a").withLastName("c").withDateOfBirth(date1).build(), new UserBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false),
+                List.of(new UserBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date2).build(), new UserBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false)
         );
     }
 }

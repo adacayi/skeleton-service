@@ -112,7 +112,7 @@ public class UserComponentTest {
 
         // Exercise
 
-        var uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(user.getId().toString()).build().toUriString();
+        var uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(user.getUserId().toString()).build().toUriString();
         var response = mockMvc
                 .perform(get(uri))
                 .andExpect(status().isOk())

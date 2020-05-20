@@ -3,7 +3,6 @@ package uk.co.sancode.skeleton_service.model;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.time.LocalDate;
@@ -12,8 +11,7 @@ import java.util.UUID;
 @Entity
 public class User {
     @Id
-    @Column(name = "user_id")
-    private UUID id;
+    private UUID userId;
     private String name;
     private String lastName;
     private LocalDate dateOfBirth;
@@ -22,15 +20,15 @@ public class User {
 
     }
 
-    public User(final UUID id, final String name, final String lastName, final LocalDate dateOfBirth) {
-        this.id = id;
+    public User(final UUID userId, final String name, final String lastName, final LocalDate dateOfBirth) {
+        this.userId = userId;
         this.name = name;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
     }
 
-    public UUID getId() {
-        return id;
+    public UUID getUserId() {
+        return userId;
     }
 
     public String getName() {
@@ -48,7 +46,7 @@ public class User {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-                .append(this.id)
+                .append(this.userId)
                 .append(this.name)
                 .append(this.lastName)
                 .append(this.dateOfBirth)
@@ -63,7 +61,7 @@ public class User {
 
         var other = (User) obj;
         return new EqualsBuilder()
-                .append(this.id, other.id)
+                .append(this.userId, other.userId)
                 .append(this.name, other.name)
                 .append(this.lastName, other.lastName)
                 .append(this.dateOfBirth, other.dateOfBirth)
