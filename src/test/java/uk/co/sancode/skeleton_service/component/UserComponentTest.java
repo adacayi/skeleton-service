@@ -28,8 +28,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
 
@@ -52,6 +51,8 @@ public class UserComponentTest {
     private UserRepository userRepository;
 
     private final String baseUrl = "/users";
+
+    // region getUsers
 
     @Test
     public void givenUsersExist_getUsers_returnsUsers() throws Exception {
@@ -106,6 +107,10 @@ public class UserComponentTest {
         assertEquals(users.subList(2, 4), actual);
     }
 
+    // endregion
+
+    // region getUser
+
     @Test
     public void givenUserExistsWithTheId_geUser_returnsUserWithId() throws Exception {
         // Setup
@@ -148,6 +153,10 @@ public class UserComponentTest {
 
         // Verify
     }
+
+    // endregion
+
+    // region saveUser
 
     @Test
     public void givenUserNotExists_saveUser_savesUserAndReturns201() throws Exception {
@@ -200,4 +209,111 @@ public class UserComponentTest {
 
         assertEquals("A record with this id already exists", errorMessage);
     }
+
+    // endregion
+
+    // region updateUser
+
+    @Test
+    public void givenUserNotExists_updateUser_returns404() throws Exception {
+        // Setup
+
+        var userDto = new UserDtoBuilder().build();
+
+        // Exercise
+
+        var errorMessage = mockMvc
+                .perform(put(baseUrl)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isNotFound())
+                .andReturn()
+                .getResponse()
+                .getErrorMessage();
+
+        // Verify
+
+        assertEquals("A record with this id does not exist", errorMessage);
+    }
+
+    @Test
+    public void givenUserExists_updateUser_updatesUserAndReturns200() throws Exception {
+        // Setup
+
+        var userDto = new UserDtoBuilder().build();
+        var userId = userDto.getUserId();
+        var user = modelMapper.map(userDto, User.class);
+        userRepository.save(user);
+        userDto = new UserDtoBuilder().withUserId(userDto.getUserId()).build();
+
+        // Exercise
+
+        var response = mockMvc
+                .perform(put(baseUrl)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Verify
+
+        var expected = new UserResponseBuilder().withUserId(userId).withPath(baseUrl + "/" + userId).build();
+        var actual = objectMapper.readValue(response, UserResponse.class);
+        assertEquals(expected, actual);
+        var userResult = userRepository.findById(userId);
+        assertTrue(userResult.isPresent());
+        assertEquals(userDto, modelMapper.map(userResult.get(), UserDto.class));
+    }
+
+    // endregion
+
+    // region deleteUser
+
+    @Test
+    public void givenUserNotExists_deleteUser_returns404() throws Exception {
+        // Setup
+
+        var userDto = new UserDtoBuilder().build();
+        var uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(userDto.getUserId().toString()).build().toUriString();
+
+
+        // Exercise
+
+        var errorMessage = mockMvc
+                .perform(delete(uri))
+                .andExpect(status().isNotFound())
+                .andReturn()
+                .getResponse()
+                .getErrorMessage();
+
+        // Verify
+
+        assertEquals("A record with this id does not exist", errorMessage);
+    }
+
+    @Test
+    public void givenUserExists_deleteUser_deletesUserAndReturns200() throws Exception {
+        // Setup
+
+        var userDto = new UserDtoBuilder().build();
+        var userId = userDto.getUserId();
+        var user = modelMapper.map(userDto, User.class);
+        userRepository.save(user);
+        var uri = UriComponentsBuilder.fromPath(baseUrl).pathSegment(userDto.getUserId().toString()).build().toUriString();
+
+        // Exercise
+
+        mockMvc
+                .perform(delete(uri))
+                .andExpect(status().isOk());
+
+        // Verify
+
+        var userResult = userRepository.findById(userId);
+        assertTrue(userResult.isEmpty());
+    }
+
+    // endregion
 }
