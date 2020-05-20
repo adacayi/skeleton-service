@@ -10,8 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 @RunWith(JUnitParamsRunner.class)
 public class UserDtoTest {
@@ -59,6 +58,23 @@ public class UserDtoTest {
         // Verify
 
         assertEquals(hash1, hash2);
+    }
+
+    @Test
+    public void givenObjectsNotEqual_hashCode_returnsDifferentValue() {
+        // Setup
+
+        var user1 = new UserDtoBuilder().build();
+        var user2 = new UserDtoBuilder().build();
+
+        // Exercise
+
+        var hash1 = user1.hashCode();
+        var hash2 = user2.hashCode();
+
+        // Verify
+
+        assertNotEquals(hash1, hash2);
     }
 
     public List<List<Object>> getUsers() {

@@ -9,8 +9,7 @@ import uk.co.sancode.skeleton_service.builder.UserResponseBuilder;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 @RunWith(JUnitParamsRunner.class)
 public class UserResponseTest {
@@ -30,13 +29,13 @@ public class UserResponseTest {
     }
 
     @Test
-    @Parameters(method = "getUsers")
-    public void equals_returnsCorrectValue(UserResponse firstUser, UserResponse secondUser, boolean expected) {
+    @Parameters(method = "getUserResponses")
+    public void equals_returnsCorrectValue(UserResponse firstResponse, UserResponse secondResponse, boolean expected) {
         // Setup
 
         // Exercise
 
-        var actual = firstUser.equals(secondUser);
+        var actual = firstResponse.equals(secondResponse);
 
         // Verify
 
@@ -48,7 +47,7 @@ public class UserResponseTest {
         // Setup
 
         var user1 = new UserResponseBuilder().build();
-        var user2 = new UserResponseBuilder().withUserId(user1.getUserId()).build();
+        var user2 = new UserResponseBuilder().withUserId(user1.getUserId()).withPath(user1.getPath()).build();
 
         // Exercise
 
@@ -60,13 +59,31 @@ public class UserResponseTest {
         assertEquals(hash1, hash2);
     }
 
-    public List<List<Object>> getUsers() {
+    @Test
+    public void givenObjectsNotEqual_hashCode_returnsDifferentValue() {
+        // Setup
+
+        var user1 = new UserResponseBuilder().build();
+        var user2 = new UserResponseBuilder().build();
+
+        // Exercise
+
+        var hash1 = user1.hashCode();
+        var hash2 = user2.hashCode();
+
+        // Verify
+
+        assertNotEquals(hash1, hash2);
+    }
+
+    public List<List<Object>> getUserResponses() {
         var uuid1 = UUID.randomUUID();
         var uuid2 = UUID.randomUUID();
 
         return List.of(
-                List.of(new UserResponseBuilder().withUserId(uuid1).build(), new UserResponseBuilder().withUserId(uuid1).build(), true),
-                List.of(new UserResponseBuilder().withUserId(uuid2).build(), new UserResponseBuilder().withUserId(uuid1).build(), false)
-        );
+                List.of(new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), true),
+                List.of(new UserResponseBuilder().withUserId(uuid2).withPath("a").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), false),
+                List.of(new UserResponseBuilder().withUserId(uuid1).withPath("b").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), false)
+                );
     }
 }

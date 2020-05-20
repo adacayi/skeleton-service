@@ -14,7 +14,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.co.sancode.skeleton_service.api.UserDto;
+import uk.co.sancode.skeleton_service.api.UserResponse;
 import uk.co.sancode.skeleton_service.builder.UserBuilder;
+import uk.co.sancode.skeleton_service.builder.UserDtoBuilder;
+import uk.co.sancode.skeleton_service.builder.UserResponseBuilder;
 import uk.co.sancode.skeleton_service.integration.persistance.UserRepository;
 import uk.co.sancode.skeleton_service.model.User;
 
@@ -23,9 +26,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
 
@@ -143,5 +147,57 @@ public class UserComponentTest {
                 .andExpect(status().isNotFound());
 
         // Verify
+    }
+
+    @Test
+    public void givenUserNotExists_saveUser_savesUserAndReturns201() throws Exception {
+        // Setup
+
+        var userDto = new UserDtoBuilder().build();
+        var userId = userDto.getUserId();
+
+        // Exercise
+
+        var response = mockMvc
+                .perform(post(baseUrl)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Verify
+
+        var expected = new UserResponseBuilder().withUserId(userId).withPath(baseUrl + "/" + userId).build();
+        var actual = objectMapper.readValue(response, UserResponse.class);
+        assertEquals(expected, actual);
+        var userResult = userRepository.findById(userId);
+        assertTrue(userResult.isPresent());
+        assertEquals(userDto, modelMapper.map(userResult.get(), UserDto.class));
+    }
+
+    @Test
+    public void givenUserExists_saveUser_returns409() throws Exception {
+        // Setup
+
+        var userDto = new UserDtoBuilder().build();
+        var user = modelMapper.map(userDto, User.class);
+        userRepository.save(user);
+
+        // Exercise
+
+        var errorMessage = mockMvc
+                .perform(post(baseUrl)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isConflict())
+                .andReturn()
+                .getResponse()
+                .getErrorMessage();
+
+        // Verify
+
+        assertEquals("A record with this id already exists", errorMessage);
     }
 }

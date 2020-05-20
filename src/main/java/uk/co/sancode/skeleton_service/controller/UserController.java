@@ -5,12 +5,16 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
-import uk.co.sancode.skeleton_service.service.UserService;
 import uk.co.sancode.skeleton_service.api.UserDto;
+import uk.co.sancode.skeleton_service.api.UserResponse;
+import uk.co.sancode.skeleton_service.model.User;
+import uk.co.sancode.skeleton_service.service.UserService;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -18,6 +22,7 @@ import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping("/users")
@@ -44,8 +49,17 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable(required = false) final UUID id) {
         var userResult = userService.getUser(id);
+
         return userResult
                 .map(user -> ResponseEntity.status(OK).body(modelMapper.map(user, UserDto.class)))
                 .orElseGet(() -> ResponseEntity.status(NOT_FOUND).build());
+    }
+
+    @PostMapping
+    public ResponseEntity<UserResponse> saveUser(@RequestBody final UserDto userDto) throws DuplicateRecordException {
+        var userId = userDto.getUserId();
+        userService.saveUser(modelMapper.map(userDto, User.class));
+
+        return ResponseEntity.status(CREATED).body(new UserResponse(userId, "/users/" + userId));
     }
 }
