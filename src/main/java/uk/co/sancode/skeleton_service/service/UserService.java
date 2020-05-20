@@ -3,6 +3,8 @@ package uk.co.sancode.skeleton_service.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import uk.co.sancode.skeleton_service.controller.DuplicateRecordException;
+import uk.co.sancode.skeleton_service.controller.RecordNotFoundException;
 import uk.co.sancode.skeleton_service.integration.persistance.UserRepository;
 import uk.co.sancode.skeleton_service.model.User;
 
@@ -25,5 +27,35 @@ public class UserService {
 
     public Optional<User> getUser(final UUID id) {
         return userRepository.findById(id);
+    }
+
+    public void saveUser(final User user) throws DuplicateRecordException {
+        var userResult = userRepository.findById(user.getId());
+
+        if (userResult.isPresent()) {
+            throw new DuplicateRecordException();
+        }
+
+        userRepository.save(user);
+    }
+
+    public void updateUser(final User user) throws RecordNotFoundException {
+        var userResult = userRepository.findById(user.getId());
+
+        if (userResult.isEmpty()) {
+            throw new RecordNotFoundException();
+        }
+
+        userRepository.save(user);
+    }
+
+    public void deleteUser(final UUID id) throws RecordNotFoundException {
+        var userResult = userRepository.findById(id);
+
+        if (userResult.isEmpty()) {
+            throw new RecordNotFoundException();
+        }
+
+        userRepository.deleteById(id);
     }
 }
