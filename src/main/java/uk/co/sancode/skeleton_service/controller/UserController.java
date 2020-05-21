@@ -18,6 +18,7 @@ import uk.co.sancode.skeleton_service.api.UserResponse;
 import uk.co.sancode.skeleton_service.model.User;
 import uk.co.sancode.skeleton_service.service.UserService;
 
+import javax.validation.Valid;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.UUID;
@@ -58,7 +59,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> saveUser(@RequestBody final UserDto userDto) throws DuplicateRecordException {
+    public ResponseEntity<UserResponse> saveUser(@RequestBody @Valid final UserDto userDto)
+            throws DuplicateRecordException {
         var userId = userDto.getUserId();
         userService.saveUser(modelMapper.map(userDto, User.class));
 

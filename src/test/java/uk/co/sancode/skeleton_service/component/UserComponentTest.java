@@ -1,6 +1,10 @@
 package uk.co.sancode.skeleton_service.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.modelmapper.ModelMapper;
@@ -10,7 +14,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.co.sancode.skeleton_service.api.UserDto;
@@ -21,6 +26,7 @@ import uk.co.sancode.skeleton_service.builder.UserResponseBuilder;
 import uk.co.sancode.skeleton_service.integration.persistance.UserRepository;
 import uk.co.sancode.skeleton_service.model.User;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,11 +39,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
+@RunWith(JUnitParamsRunner.class)
 @AutoConfigureMockMvc
 @ActiveProfiles({"mockdatabase"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserComponentTest {
+    @ClassRule
+    public static final SpringClassRule SCR = new SpringClassRule();
+
+    @Rule
+    public final SpringMethodRule springMethodRule = new SpringMethodRule();
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -210,6 +222,21 @@ public class UserComponentTest {
         assertEquals("A record with this id already exists", errorMessage);
     }
 
+    @Test
+    @Parameters(method = "getInvalidUsers")
+    public void givenInvalidValues_saveUser_returns404(UserDto userDto) throws Exception {
+        // Setup
+
+        // Exercise
+
+        mockMvc.perform(post(baseUrl)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isBadRequest());
+
+        // Verify
+    }
+
     // endregion
 
     // region updateUser
@@ -316,4 +343,16 @@ public class UserComponentTest {
     }
 
     // endregion
+
+    private List<Object> getInvalidUsers() {
+        return List.of(
+                new UserDtoBuilder().withUserId(null).build(),
+                new UserDtoBuilder().withName(null).build(),
+                new UserDtoBuilder().withLastName(null).build(),
+                new UserDtoBuilder().withDateOfBirth(null).build(),
+                new UserDtoBuilder().withName("a").build(),
+                new UserDtoBuilder().withLastName("b").build(),
+                new UserDtoBuilder().withDateOfBirth(LocalDate.now().plusDays(1)).build()
+        );
+    }
 }

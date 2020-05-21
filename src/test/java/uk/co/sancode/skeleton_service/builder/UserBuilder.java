@@ -16,8 +16,8 @@ public class UserBuilder {
 
     public UserBuilder() {
         userId = UUID.randomUUID();
-        name = RandomStringUtils.randomAlphanumeric(getRandomInt(5, 20));
-        lastName = RandomStringUtils.randomAlphanumeric(getRandomInt(5, 20));
+        name = RandomStringUtils.randomAlphabetic(getRandomInt(5, 20));
+        lastName = RandomStringUtils.randomAlphabetic(getRandomInt(5, 20));
         dateOfBirth = LocalDate.now().minusYears(getRandomInt(10, 60)).minusDays(getRandomInt(0, 365));
     }
 
