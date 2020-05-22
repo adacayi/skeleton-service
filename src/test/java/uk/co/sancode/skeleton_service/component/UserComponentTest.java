@@ -1,5 +1,6 @@
 package uk.co.sancode.skeleton_service.component;
 
+import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -17,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.co.sancode.skeleton_service.api.UserDto;
 import uk.co.sancode.skeleton_service.api.UserResponse;
@@ -24,8 +26,10 @@ import uk.co.sancode.skeleton_service.builder.UserBuilder;
 import uk.co.sancode.skeleton_service.builder.UserDtoBuilder;
 import uk.co.sancode.skeleton_service.builder.UserResponseBuilder;
 import uk.co.sancode.skeleton_service.integration.persistance.UserRepository;
+import uk.co.sancode.skeleton_service.log.TestLogAppender;
 import uk.co.sancode.skeleton_service.model.User;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +40,7 @@ import static org.junit.Assert.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.co.sancode.skeleton_service.log.LogCategory.VALIDATION;
 import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -75,7 +80,8 @@ public class UserComponentTest {
 
         // Exercise
 
-        var response = mockMvc.perform(get(baseUrl))
+        var response = mockMvc
+                .perform(get(baseUrl))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -101,9 +107,10 @@ public class UserComponentTest {
 
         // Exercise
 
-        var response = mockMvc.perform(get(baseUrl)
-                .param("page", "2")
-                .param("size", "2"))
+        var response = mockMvc
+                .perform(get(baseUrl)
+                        .param("page", "2")
+                        .param("size", "2"))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -224,17 +231,23 @@ public class UserComponentTest {
 
     @Test
     @Parameters(method = "getInvalidUsers")
-    public void givenInvalidValues_saveUser_returns404(UserDto userDto) throws Exception {
+    public void givenInvalidValues_saveUser_returns404(UserDto userDto, List<String> invalidFields) throws Exception {
         // Setup
+
+        TestLogAppender.reset();
 
         // Exercise
 
-        mockMvc.perform(post(baseUrl)
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isBadRequest());
+        var result = mockMvc
+                .perform(post(baseUrl)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
         // Verify
+
+        assertFieldValidation(invalidFields, result);
     }
 
     // endregion
@@ -294,10 +307,31 @@ public class UserComponentTest {
         assertEquals(userDto, modelMapper.map(userResult.get(), UserDto.class));
     }
 
+    @Test
+    @Parameters(method = "getInvalidUsers")
+    public void givenInvalidValues_updateUser_returns404(UserDto userDto, List<String> invalidFields) throws Exception {
+        // Setup
+
+        TestLogAppender.reset();
+
+        // Exercise
+
+        var result = mockMvc
+                .perform(put(baseUrl)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        // Verify
+
+        assertFieldValidation(invalidFields, result);
+    }
+
+
     // endregion
 
     // region deleteUser
-
     @Test
     public void givenUserNotExists_deleteUser_returns404() throws Exception {
         // Setup
@@ -342,17 +376,28 @@ public class UserComponentTest {
         assertTrue(userResult.isEmpty());
     }
 
+
     // endregion
 
     private List<Object> getInvalidUsers() {
         return List.of(
-                new UserDtoBuilder().withUserId(null).build(),
-                new UserDtoBuilder().withName(null).build(),
-                new UserDtoBuilder().withLastName(null).build(),
-                new UserDtoBuilder().withDateOfBirth(null).build(),
-                new UserDtoBuilder().withName("a").build(),
-                new UserDtoBuilder().withLastName("b").build(),
-                new UserDtoBuilder().withDateOfBirth(LocalDate.now().plusDays(1)).build()
+                List.of(new UserDtoBuilder().withUserId(null).build(), List.of("userId")),
+                List.of(new UserDtoBuilder().withName(null).build(), List.of("name")),
+                List.of(new UserDtoBuilder().withLastName(null).build(), List.of("lastName")),
+                List.of(new UserDtoBuilder().withDateOfBirth(null).build(), List.of("dateOfBirth")),
+                List.of(new UserDtoBuilder().withName("a").build(), List.of("name")),
+                List.of(new UserDtoBuilder().withLastName("b").build(), List.of("lastName")),
+                List.of(new UserDtoBuilder().withDateOfBirth(LocalDate.now().plusDays(1)).build(), List.of("dateOfBirth")),
+                List.of(new UserDtoBuilder().withUserId(null).withName("a").withLastName("b").withDateOfBirth(null).build(), List.of("dateOfBirth", "lastName", "name", "userId"))
         );
+    }
+
+    private void assertFieldValidation(List<String> invalidFields, MvcResult result) throws UnsupportedEncodingException {
+        assertNull(result.getResolvedException());
+        var content = result.getResponse().getContentAsString();
+        assertTrue(content.startsWith("Request body with invalid fields: "));
+        invalidFields.forEach(x -> assertTrue(content.contains(x)));
+        var pattern = String.format(".*%s\\s.*%s.*", "\\" + VALIDATION.toString().replace("]", "\\]"), invalidFields);
+        assertTrue(TestLogAppender.hasLogMatchingRegex(pattern, Level.ERROR));
     }
 }

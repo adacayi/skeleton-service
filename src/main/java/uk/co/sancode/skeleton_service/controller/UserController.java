@@ -2,8 +2,12 @@ package uk.co.sancode.skeleton_service.controller;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,14 +26,18 @@ import javax.validation.Valid;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.CREATED;
+import static uk.co.sancode.skeleton_service.log.LogCategory.VALIDATION;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
+    private static final String INVALID_REQUEST_BODY_PATTERN = "Request body with invalid fields: %s";
     private final UserService userService;
     private final ModelMapper modelMapper;
 
@@ -59,8 +67,13 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> saveUser(@RequestBody @Valid final UserDto userDto)
+    public ResponseEntity<Object> saveUser(@RequestBody @Valid final UserDto userDto, final BindingResult result)
             throws DuplicateRecordException {
+        if (result.hasErrors()) {
+            logBindingErrors(result);
+            return getBindingErrorResponse(result);
+        }
+
         var userId = userDto.getUserId();
         userService.saveUser(modelMapper.map(userDto, User.class));
 
@@ -68,7 +81,13 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<UserResponse> updateUser(@RequestBody final UserDto userDto) throws RecordNotFoundException {
+    public ResponseEntity<Object> updateUser(@RequestBody @Valid final UserDto userDto, final BindingResult result)
+            throws RecordNotFoundException {
+        if (result.hasErrors()) {
+            logBindingErrors(result);
+            return getBindingErrorResponse(result);
+        }
+
         var userId = userDto.getUserId();
         userService.updateUser(modelMapper.map(userDto, User.class));
 
@@ -79,5 +98,19 @@ public class UserController {
     public ResponseEntity<UserResponse> deleteUser(@PathVariable final UUID userId) throws RecordNotFoundException {
         userService.deleteUser(userId);
         return ResponseEntity.ok().build();
+    }
+
+    private void logBindingErrors(final BindingResult result) {
+        result.getAllErrors().forEach(x -> LOGGER.error("{} {}", VALIDATION, x));
+    }
+
+    private ResponseEntity<Object> getBindingErrorResponse(final BindingResult result) {
+        var fields = result
+                .getAllErrors()
+                .stream()
+                .map(x -> ((FieldError) x).getField())
+                .sorted()
+                .collect(Collectors.joining(", "));
+        return ResponseEntity.badRequest().body(String.format(INVALID_REQUEST_BODY_PATTERN, fields));
     }
 }
