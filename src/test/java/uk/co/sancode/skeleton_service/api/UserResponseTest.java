@@ -76,14 +76,14 @@ public class UserResponseTest {
         assertNotEquals(hash1, hash2);
     }
 
-    public List<List<Object>> getUserResponses() {
+    public Object[][] getUserResponses() {
         var uuid1 = UUID.randomUUID();
         var uuid2 = UUID.randomUUID();
 
-        return List.of(
-                List.of(new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), true),
-                List.of(new UserResponseBuilder().withUserId(uuid2).withPath("a").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), false),
-                List.of(new UserResponseBuilder().withUserId(uuid1).withPath("b").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), false)
-                );
+        return new Object[][]{
+                {new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), true},
+                {new UserResponseBuilder().withUserId(uuid2).withPath("a").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), false},
+                {new UserResponseBuilder().withUserId(uuid1).withPath("b").build(), new UserResponseBuilder().withUserId(uuid1).withPath("a").build(), false}
+        };
     }
 }

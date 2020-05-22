@@ -401,17 +401,17 @@ public class UserComponentTest {
 
     // endregion
 
-    private List<Object> getInvalidUsers() {
-        return List.of(
-                List.of(new UserDtoBuilder().withUserId(null).build(), List.of("userId")),
-                List.of(new UserDtoBuilder().withName(null).build(), List.of("name")),
-                List.of(new UserDtoBuilder().withLastName(null).build(), List.of("lastName")),
-                List.of(new UserDtoBuilder().withDateOfBirth(null).build(), List.of("dateOfBirth")),
-                List.of(new UserDtoBuilder().withName("a").build(), List.of("name")),
-                List.of(new UserDtoBuilder().withLastName("b").build(), List.of("lastName")),
-                List.of(new UserDtoBuilder().withDateOfBirth(LocalDate.now().plusDays(1)).build(), List.of("dateOfBirth")),
-                List.of(new UserDtoBuilder().withUserId(null).withName("a").withLastName("b").withDateOfBirth(null).build(), List.of("dateOfBirth", "lastName", "name", "userId"))
-        );
+    private Object[][] getInvalidUsers() {
+        return new Object[][]{
+                {new UserDtoBuilder().withUserId(null).build(), List.of("userId")},
+                {new UserDtoBuilder().withName(null).build(), List.of("name")},
+                {new UserDtoBuilder().withLastName(null).build(), List.of("lastName")},
+                {new UserDtoBuilder().withDateOfBirth(null).build(), List.of("dateOfBirth")},
+                {new UserDtoBuilder().withName("a").build(), List.of("name")},
+                {new UserDtoBuilder().withLastName("b").build(), List.of("lastName")},
+                {new UserDtoBuilder().withDateOfBirth(LocalDate.now().plusDays(1)).build(), List.of("dateOfBirth")},
+                {new UserDtoBuilder().withUserId(null).withName("a").withLastName("b").withDateOfBirth(null).build(), List.of("dateOfBirth", "lastName", "name", "userId")}
+        };
     }
 
     private void assertFieldValidation(List<String> invalidFields, MvcResult result) throws UnsupportedEncodingException {

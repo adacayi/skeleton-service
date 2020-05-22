@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import uk.co.sancode.skeleton_service.builder.UserDtoBuilder;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -77,17 +76,17 @@ public class UserDtoTest {
         assertNotEquals(hash1, hash2);
     }
 
-    public List<List<Object>> getUsers() {
+    public Object[][] getUsers() {
         var uuid1 = UUID.randomUUID();
         var uuid2 = UUID.randomUUID();
         var date1 = LocalDate.of(2000, 1, 1);
         var date2 = LocalDate.of(2001, 1, 1);
-        return List.of(
-                List.of(new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), true),
-                List.of(new UserDtoBuilder().withUserId(uuid2).withName("a").withLastName("b").withDateOfBirth(date1).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false),
-                List.of(new UserDtoBuilder().withUserId(uuid1).withName("b").withLastName("b").withDateOfBirth(date1).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false),
-                List.of(new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("c").withDateOfBirth(date1).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false),
-                List.of(new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date2).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false)
-        );
+        return new Object[][]{
+                {new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), true},
+                {new UserDtoBuilder().withUserId(uuid2).withName("a").withLastName("b").withDateOfBirth(date1).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false},
+                {new UserDtoBuilder().withUserId(uuid1).withName("b").withLastName("b").withDateOfBirth(date1).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false},
+                {new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("c").withDateOfBirth(date1).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false},
+                {new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date2).build(), new UserDtoBuilder().withUserId(uuid1).withName("a").withLastName("b").withDateOfBirth(date1).build(), false}
+        };
     }
 }
