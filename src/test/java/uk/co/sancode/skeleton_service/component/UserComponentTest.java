@@ -222,7 +222,7 @@ public class UserComponentTest {
                 .andExpect(status().isConflict())
                 .andReturn()
                 .getResponse()
-                .getErrorMessage();
+                .getContentAsString();
 
         // Verify
 
@@ -250,6 +250,28 @@ public class UserComponentTest {
         assertFieldValidation(invalidFields, result);
     }
 
+    @Test
+    public void givenNonBindableValue_saveUser_returns400() throws Exception {
+        // Setup
+
+        var userDto = new UserDtoBuilder().build();
+        var serialized = objectMapper.writeValueAsString(userDto);
+        serialized = serialized.replaceFirst("\"userId\":\"[A-Za-z0-9]{8}-([A-Za-z0-9]{4}-){3}[A-Za-z0-9]{12}\"", "\"userId\":\"asdf\"");
+        TestLogAppender.reset();
+
+        // Exercise
+
+        mockMvc
+                .perform(post(baseUrl)
+                        .contentType(APPLICATION_JSON)
+                        .content(serialized))
+                .andExpect(status().isBadRequest());
+
+        // Verify
+
+        assertTrue(TestLogAppender.hasLogContaining("JSON parse error: Cannot deserialize value of type `java.util.UUID`", Level.ERROR));
+    }
+
     // endregion
 
     // region updateUser
@@ -269,7 +291,7 @@ public class UserComponentTest {
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse()
-                .getErrorMessage();
+                .getContentAsString();
 
         // Verify
 
@@ -347,7 +369,7 @@ public class UserComponentTest {
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getResponse()
-                .getErrorMessage();
+                .getContentAsString();
 
         // Verify
 
