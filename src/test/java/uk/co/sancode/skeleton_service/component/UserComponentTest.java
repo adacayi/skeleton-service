@@ -7,6 +7,7 @@ import junitparams.Parameters;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -20,6 +21,7 @@ import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.util.UriComponentsBuilder;
+import uk.co.sancode.skeleton_service.ComponentTests;
 import uk.co.sancode.skeleton_service.api.UserDto;
 import uk.co.sancode.skeleton_service.api.UserResponse;
 import uk.co.sancode.skeleton_service.builder.UserBuilder;
@@ -43,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.co.sancode.skeleton_service.log.LogCategory.VALIDATION;
 import static uk.co.sancode.skeleton_service.utilities.RandomUtilities.getRandomInt;
 
+@Category(ComponentTests.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(JUnitParamsRunner.class)
 @AutoConfigureMockMvc
